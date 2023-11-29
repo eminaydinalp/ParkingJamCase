@@ -11,7 +11,7 @@ namespace Car
         public CarMovement(CarController carController)
         {
             _carController = carController;
-            _speed = carController.moveSpeed;
+            _speed = carController.carSo.moveSpeed;
         }
         
         public void SetMoveDirection(Vector3 swipeDirection)

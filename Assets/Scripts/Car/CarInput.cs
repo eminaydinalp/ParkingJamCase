@@ -1,55 +1,39 @@
+using Lean.Touch;
+using Managers;
 using UnityEngine;
 
 namespace Car
 {
-    public class CarInput : MonoBehaviour
+    public class CarInput
     {
-        [SerializeField] private Camera _camera;
-        [SerializeField] private LayerMask _carMask;
-        [SerializeField] private float threshold;
+        private CarController _carController;
         
-        private bool isSwiped;
-
-        private void Update()
+        private Camera _camera;
+        private LayerMask _carMask;
+        private float _threshold;
+        
+        public CarInput(CarController carController, Camera camera, LayerMask layerMask)
         {
-            TouchControl();
+            _carController = carController;
+            _camera = camera;
+            _carMask = layerMask;
+            _threshold = carController.carSo.swipeThreshold;
         }
+        
 
-        private void TouchControl()
+        public void TouchControl()
         {
-            if (Input.touchCount <= 0)
+            if (InputManager.Instance.GetSwipeScreenDelta().magnitude > _threshold && !_carController.isSwipe)
             {
-                return;
-            }
-
-            var touch = Input.GetTouch(0);
-
-            switch (touch.phase)
-            {
-                case TouchPhase.Began:
-                    break;
-                case TouchPhase.Moved:
-                    if (touch.deltaPosition.magnitude > threshold && !isSwiped)
-                    {
-                        isSwiped = true;
-                        OnFingerPressed(touch);
-                    }
-                    break;
-                case TouchPhase.Stationary:
-                    break;
-                case TouchPhase.Ended:
-                    isSwiped = false;
-                    break;
-                case TouchPhase.Canceled:
-                    isSwiped = false;
-                    break;
+                _carController.isSwipe = true;
+                OnFingerPressed(InputManager.Instance.Finger);
             }
         }
-
         
-        private void OnFingerPressed(Touch touch)
+        
+        private void OnFingerPressed(LeanFinger finger)
         {
-            var ray = _camera.ScreenPointToRay(touch.position);
+            var ray = _camera.ScreenPointToRay(finger.ScreenPosition);
             var isHit = Physics.Raycast(ray, out var hitInfo, 1000, _carMask.value);
 
             if (!isHit)
@@ -64,7 +48,7 @@ namespace Car
             
             if(carController.isMove) return;
             
-            var delta = touch.deltaPosition.normalized;
+            var delta = finger.ScreenDelta.normalized;
             var convertedDirection = new Vector3(delta.x, 0, delta.y);
             
             carController.MoveStart(convertedDirection);

@@ -1,7 +1,6 @@
-using System;
+using Abstract.Collision;
 using Cinemachine;
-using DG.Tweening;
-using Obstacles;
+using Managers;
 using Spline;
 using UnityEngine;
 
@@ -9,21 +8,48 @@ namespace Car
 {
     public class CarController : MonoBehaviour
     {
-        private CarMovement _carMovement;
-
-        public bool isMove;
-        public float moveSpeed;
+        public CarSo carSo;
         
+        private CarMovement _carMovement;
+        private CarBackFire _carBackFire;
+        private CarSplineFollow _carSplineFollow;
+        private CarInput _carInput;
+        
+        public bool isMove;
+        public bool isSwipe;
+                
+        private bool _isSplineFollow;
+
+        [SerializeField] private Camera camera;
         [SerializeField] private CinemachineDollyCart cinemachineDollyCart;
-        [SerializeField] private bool isSpline;
+        [SerializeField] private LayerMask layerMask;
 
         private void Awake()
         {
             _carMovement = new CarMovement(this);
+            _carBackFire = new CarBackFire(this);
+            _carSplineFollow = new CarSplineFollow(this, cinemachineDollyCart);
+            _carInput = new CarInput(this, camera, layerMask);
+        }
+
+        private void OnEnable()
+        {
+            EventManager.OnCollideObstacle += MoveStop;
+            EventManager.OnCollideObstacleWithTransform += CarBackFire;
+            EventManager.OnCollideSpline += CarFollowSpline;
+        }
+        
+        private void OnDisable()
+        {
+            EventManager.OnCollideObstacle -= MoveStop;
+            EventManager.OnCollideObstacleWithTransform -= CarBackFire;
+            EventManager.OnCollideSpline -= CarFollowSpline;
         }
 
         private void Update()
         {
+            _carInput.TouchControl();
+
             if (isMove)
             {
                 _carMovement.MoveStraight();
@@ -36,63 +62,29 @@ namespace Car
             isMove = true;
         }
 
-        public void MoveStop()
+        private void MoveStop()
         {
             isMove = false;
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            Obstacle obstacle = other.GetComponent<Obstacle>();
-
-            if (obstacle != null)
+            if (other.TryGetComponent(out ICollide collide))
             {
-                obstacle.HandleCollision();
-                MoveStop();
-                CollisionObstacle(other.transform);
-            }
-
-            SplineTrigger splineTrigger = other.GetComponent<SplineTrigger>();
-
-            if (splineTrigger != null && !isSpline)
-            {
-                isSpline = true;
-
-                Vector3 point = other.bounds.ClosestPoint(transform.position);
-
-                var path = splineTrigger.Path;
-                cinemachineDollyCart.m_Path = path;
-
-                var closestPoint = path.FindClosestPoint(point, 0, -1, 10);
-                closestPoint = path.FromPathNativeUnits(closestPoint, cinemachineDollyCart.m_PositionUnits);
-
-                var startPosition = path.EvaluatePositionAtUnit(closestPoint, cinemachineDollyCart.m_PositionUnits);
-                var startRotation = path.EvaluateOrientationAtUnit(closestPoint, cinemachineDollyCart.m_PositionUnits);
-
-                transform.DOMove(startPosition, 0.2f);
-
-                transform.DORotateQuaternion(startRotation, 0.2f)
-                    .OnComplete(() =>
-                    {
-                        cinemachineDollyCart.m_Position = closestPoint;
-                        cinemachineDollyCart.enabled = true;
-
-                        DOVirtual.Float(cinemachineDollyCart.m_Speed / 3f, cinemachineDollyCart.m_Speed, 0.2f, value => cinemachineDollyCart.m_Speed = value);
-                    });
+                collide.HandleCollide();
             }
         }
 
-        private void CollisionObstacle(Transform obstacle)
+        private void CarBackFire(Transform obstacle)
         {
-            var direction =  obstacle.position - transform.position;
-            var dot = Vector3.Dot(transform.forward.normalized , direction.normalized);
-            
-            var moveDireciton = transform.forward * MathF.Sign(-dot);
+            _carBackFire.BackFire(obstacle);
+        }
 
-            
-            transform.DOLocalMove(transform.localPosition + moveDireciton * 0.3f, 0.2f);
-            transform.DOPunchRotation(direction * 7f, 0.3f, 8);
-
+        private void CarFollowSpline(SplineTrigger splineTrigger)
+        {
+            if(_isSplineFollow) return;
+            _isSplineFollow = true;
+            _carSplineFollow.FollowSpline(splineTrigger);
         }
     }
 }
