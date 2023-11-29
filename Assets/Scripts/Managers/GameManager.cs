@@ -1,5 +1,6 @@
 using System.Collections;
 using Sounds;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,6 +16,7 @@ namespace Managers
         public int currentLevel;
         public int totalLevelCount;
 
+        [SerializeField] private TMP_Text levelText;
         private void Start()
         {
             OpenCurrentLevel();
@@ -54,6 +56,8 @@ namespace Managers
             {
                 level = (GameObject)Instantiate(Resources.Load("Level" + currentLevel));
             }
+
+            levelText.text = "Level : " + currentLevel;
         }
 
         private void Confetti()
