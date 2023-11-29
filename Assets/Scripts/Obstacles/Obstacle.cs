@@ -1,6 +1,8 @@
 using Abstract.Collision;
+using Car;
 using DG.Tweening;
 using Managers;
+using Sounds;
 using UnityEngine;
 
 namespace Obstacles
@@ -17,11 +19,12 @@ namespace Obstacles
             transform.DOPunchRotation(Vector3.right * shakeRotateForce, shakeRotateDuration, shakeRotateVibrato, shakeRotateElasticity);
         }
 
-        public void HandleCollide()
+        public void HandleCollide(CarController carController)
         {
-            EventManager.InvokeOnCollideObstacle();
-            EventManager.InvokeOnCollideObstacleWithTransform(transform);
+            carController.CarBackFire(transform);
+            carController.MoveStop();
             ShakeObstacle();
+            AudioManager.Instance.PlaySound(SoundName.ObstacleCrash);
         }
     }
 }

@@ -15,18 +15,12 @@ namespace Managers
         private LeanFinger myFinger;
         public LeanFinger Finger => myFinger;
         private bool fingerActive => myFinger != null;
-
-        private CarController _carController;
-
+        
         private void Awake()
         {
             Instance = this;
         }
-
-        private void Start()
-        {
-            _carController = FindObjectOfType<CarController>();
-        }
+        
 
         private void OnEnable()
         {
@@ -64,7 +58,6 @@ namespace Managers
             if (myFinger == finger)
             {
                 myFinger = null;
-                _carController.isSwipe = false;
             }
         }
     }

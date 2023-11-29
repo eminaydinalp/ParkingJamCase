@@ -1,7 +1,9 @@
+using Car;
+
 namespace Abstract.Collision
 {
     public interface ICollide
     {
-        void HandleCollide();
+        void HandleCollide(CarController carController);
     }
 }

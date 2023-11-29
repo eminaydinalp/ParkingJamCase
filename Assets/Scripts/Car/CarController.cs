@@ -1,12 +1,15 @@
 using Abstract.Collision;
 using Cinemachine;
+using DG.Tweening;
+using Lean.Touch;
 using Managers;
+using Sounds;
 using Spline;
 using UnityEngine;
 
 namespace Car
 {
-    public class CarController : MonoBehaviour
+    public class CarController : MonoBehaviour, ICollide
     {
         public CarSo carSo;
         
@@ -17,33 +20,32 @@ namespace Car
         
         public bool isMove;
         public bool isSwipe;
-                
+        public bool isActive;
         private bool _isSplineFollow;
 
-        [SerializeField] private Camera camera;
+        private Camera _camera;
+        
         [SerializeField] private CinemachineDollyCart cinemachineDollyCart;
         [SerializeField] private LayerMask layerMask;
+        [SerializeField] private GameObject smokeTrailParticle;
 
         private void Awake()
         {
+            _camera = Camera.main;
             _carMovement = new CarMovement(this);
             _carBackFire = new CarBackFire(this);
             _carSplineFollow = new CarSplineFollow(this, cinemachineDollyCart);
-            _carInput = new CarInput(this, camera, layerMask);
+            _carInput = new CarInput(this, _camera, layerMask);
         }
 
         private void OnEnable()
         {
-            EventManager.OnCollideObstacle += MoveStop;
-            EventManager.OnCollideObstacleWithTransform += CarBackFire;
-            EventManager.OnCollideSpline += CarFollowSpline;
+            LeanTouch.OnFingerUp += FingerUp;
         }
         
         private void OnDisable()
         {
-            EventManager.OnCollideObstacle -= MoveStop;
-            EventManager.OnCollideObstacleWithTransform -= CarBackFire;
-            EventManager.OnCollideSpline -= CarFollowSpline;
+            LeanTouch.OnFingerUp -= FingerUp;
         }
 
         private void Update()
@@ -60,9 +62,10 @@ namespace Car
         {
             _carMovement.SetMoveDirection(direction);
             isMove = true;
+            AudioManager.Instance.PlaySound(SoundName.Movement);
         }
 
-        private void MoveStop()
+        public void MoveStop()
         {
             isMove = false;
         }
@@ -71,20 +74,48 @@ namespace Car
         {
             if (other.TryGetComponent(out ICollide collide))
             {
-                collide.HandleCollide();
+                collide.HandleCollide(this);
             }
         }
 
-        private void CarBackFire(Transform obstacle)
+        public void CarBackFire(Transform obstacle)
         {
+            if(!isActive) return;
+            isActive = false;
             _carBackFire.BackFire(obstacle);
         }
 
-        private void CarFollowSpline(SplineTrigger splineTrigger)
+        public void CarFollowSpline(SplineTrigger splineTrigger)
         {
             if(_isSplineFollow) return;
             _isSplineFollow = true;
             _carSplineFollow.FollowSpline(splineTrigger);
+            smokeTrailParticle.SetActive(true);
+        }
+
+        private void FingerUp(LeanFinger finger)
+        {
+            isSwipe = false;
+        }
+
+        public void DestroyCar()
+        {
+            Destroy(gameObject, 1);
+        }
+
+        public void HandleCollide(CarController carController)
+        {
+            if(isActive) return;
+            carController.MoveStop();
+            carController.CarBackFire(transform);
+            ShakeObstacle();
+            AudioManager.Instance.PlaySound(SoundName.CarCrash);
+        }
+
+        private void ShakeObstacle()
+        {
+            transform.DOKill(true);
+            transform.DOPunchRotation(Vector3.back * carSo.shakeRotateForce, carSo.shakeRotateDuration, carSo.shakeRotateVibrato, carSo.shakeRotateElasticity);
         }
     }
 }

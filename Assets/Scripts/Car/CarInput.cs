@@ -50,7 +50,7 @@ namespace Car
             
             var delta = finger.ScreenDelta.normalized;
             var convertedDirection = new Vector3(delta.x, 0, delta.y);
-            
+            carController.isActive = true;
             carController.MoveStart(convertedDirection);
         }
     }

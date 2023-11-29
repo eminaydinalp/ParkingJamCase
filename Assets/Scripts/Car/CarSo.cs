@@ -22,5 +22,10 @@ namespace Car
         public float firstSplineMoveDuration;
         public float firstSplineRotateDuration;
         
+        public float shakeRotateForce;
+        public float shakeRotateDuration;
+        public int shakeRotateVibrato;
+        public float shakeRotateElasticity;
+        
     }
 }

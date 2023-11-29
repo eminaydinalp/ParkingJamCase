@@ -1,7 +1,6 @@
-using System;
 using Abstract.Collision;
+using Car;
 using Cinemachine;
-using Managers;
 using UnityEngine;
 
 namespace Spline
@@ -17,9 +16,9 @@ namespace Spline
             boxCollider = GetComponent<BoxCollider>();
         }
 
-        public void HandleCollide()
+        public void HandleCollide(CarController carController)
         {
-            EventManager.InvokeOnCollideSpline(this);
+            carController.CarFollowSpline(this);
         }
 
         public Vector3 ClosestPoint(Transform carTransform)

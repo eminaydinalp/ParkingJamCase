@@ -21,3 +21,7 @@ MonoBehaviour:
   swipeThreshold: 3
   firstSplineMoveDuration: 0.2
   firstSplineRotateDuration: 0.2
+  shakeRotateForce: 10
+  shakeRotateDuration: 0.5
+  shakeRotateVibrato: 5
+  shakeRotateElasticity: 0.5
