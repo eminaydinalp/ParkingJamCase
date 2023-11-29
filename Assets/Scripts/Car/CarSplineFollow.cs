@@ -1,5 +1,6 @@
 using Cinemachine;
 using DG.Tweening;
+using Managers;
 using Spline;
 using UnityEngine;
 
@@ -38,6 +39,8 @@ namespace Car
                     _dollyCart.enabled = true;
 
                     DOVirtual.Float(_dollyCart.m_Speed / 3f, _dollyCart.m_Speed, 0.2f, value => _dollyCart.m_Speed = value);
+                    
+                    CarManager.Instance.currentSwipeCar = null;
                 }); 
         }
     }

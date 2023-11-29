@@ -38,16 +38,6 @@ namespace Car
             _carInput = new CarInput(this, _camera, layerMask);
         }
 
-        private void OnEnable()
-        {
-            LeanTouch.OnFingerUp += FingerUp;
-        }
-        
-        private void OnDisable()
-        {
-            LeanTouch.OnFingerUp -= FingerUp;
-        }
-
         private void Update()
         {
             _carInput.TouchControl();
@@ -91,11 +81,6 @@ namespace Car
             _isSplineFollow = true;
             _carSplineFollow.FollowSpline(splineTrigger);
             smokeTrailParticle.SetActive(true);
-        }
-
-        private void FingerUp(LeanFinger finger)
-        {
-            isSwipe = false;
         }
 
         public void DestroyCar()

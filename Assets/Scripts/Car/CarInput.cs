@@ -23,17 +23,10 @@ namespace Car
 
         public void TouchControl()
         {
-            if (InputManager.Instance.GetSwipeScreenDelta().magnitude > _threshold && !_carController.isSwipe)
-            {
-                _carController.isSwipe = true;
-                OnFingerPressed(InputManager.Instance.Finger);
-            }
-        }
-        
-        
-        private void OnFingerPressed(LeanFinger finger)
-        {
-            var ray = _camera.ScreenPointToRay(finger.ScreenPosition);
+            if(InputManager.Instance.Finger == null || CarManager.Instance.currentSwipeCar != null) return;
+            
+            var ray = _camera.ScreenPointToRay(InputManager.Instance.Finger.ScreenPosition);
+            
             var isHit = Physics.Raycast(ray, out var hitInfo, 1000, _carMask.value);
 
             if (!isHit)
@@ -46,12 +39,18 @@ namespace Car
                 return;
             }
             
-            if(carController.isMove) return;
+            if (InputManager.Instance.GetSwipeScreenDelta().magnitude > _threshold && !carController.isSwipe)
+            {
+                CarManager.Instance.currentSwipeCar = carController;
+                carController.isSwipe = true;
+                if(carController.isMove) return;
             
-            var delta = finger.ScreenDelta.normalized;
-            var convertedDirection = new Vector3(delta.x, 0, delta.y);
-            carController.isActive = true;
-            carController.MoveStart(convertedDirection);
+                var delta = InputManager.Instance.Finger.ScreenDelta.normalized;
+                var convertedDirection = new Vector3(delta.x, 0, delta.y);
+                carController.isActive = true;
+                carController.MoveStart(convertedDirection);
+            }
         }
+        
     }
 }

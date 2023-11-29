@@ -1,5 +1,6 @@
 using System;
 using DG.Tweening;
+using Managers;
 using UnityEngine;
 
 namespace Car
@@ -22,7 +23,11 @@ namespace Car
 
             
             _carController.transform.DOLocalMove(_carController.transform.localPosition + moveDireciton * _carController.carSo.moveDistance, 
-                _carController.carSo.moveDuration);
+                _carController.carSo.moveDuration).OnComplete((() =>
+            {
+                _carController.isSwipe = false;
+                CarManager.Instance.currentSwipeCar = null;
+            }));
             
             _carController.transform.DOPunchRotation(direction * _carController.carSo.rotateForce, _carController.carSo.rotateDuration, 
                 _carController.carSo.rotateVibrato);
