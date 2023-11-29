@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   moveDuration: 0.2
-  moveDistance: 0.3
+  moveDistance: 0.5
   rotateForce: 7
   rotateDuration: 0.3
   rotateVibrato: 8

@@ -81,7 +81,7 @@ namespace Car
         public void CarBackFire(Transform obstacle)
         {
             if(!isActive) return;
-            isActive = false;
+            DOVirtual.DelayedCall(0.2f, () => isActive = false);
             _carBackFire.BackFire(obstacle);
         }
 
